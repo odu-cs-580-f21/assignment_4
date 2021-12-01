@@ -9,6 +9,7 @@ AI = 1
 HUMAN_VALUE = 1
 AI_VALUE = 2
 game_over = False
+# increasing the depth of the tree increases the difficulty of the game but also increases the time it takes to calculate optimal move for the AI
 DEPTH = 6
 # this is the amount of values we need to connect in order to win
 GROUP = 4
@@ -121,7 +122,7 @@ def checkTerminalNode(board):
     # checks if the game is over
     return checkForWin(board, HUMAN_VALUE) or checkForWin(board, AI_VALUE) or len(getValidCol(board)) == 0
 
-def minmax(board, depth, alpha, beta, maximizingPlayer):
+def minmax(board, depth, maximizingPlayer):
     valid = getValidCol(board)
     isTerminal = checkTerminalNode(board)
 
@@ -144,13 +145,13 @@ def minmax(board, depth, alpha, beta, maximizingPlayer):
             row = findOpenRow(board, col)
             temp_board = board.copy()
             addValueToBoard(temp_board, row, col, AI_VALUE)
-            new_score = minmax(temp_board, depth - 1, alpha, beta, False)[1]
+            new_score = minmax(temp_board, depth - 1, False)[1]
             if new_score > value:
                 value = new_score
                 best_col = col
-            alpha = max(alpha, value)
-            if alpha >= beta:
-                break
+            # alpha = max(alpha, value)
+            # if alpha >= beta:
+            #     break
         return best_col, new_score
 
     else:
@@ -160,13 +161,13 @@ def minmax(board, depth, alpha, beta, maximizingPlayer):
             row = findOpenRow(board, col)
             temp_board = board.copy()
             addValueToBoard(temp_board, row, col, HUMAN_VALUE)
-            new_score = minmax(temp_board, depth - 1, alpha, beta, True)[1]
+            new_score = minmax(temp_board, depth - 1, True)[1]
             if new_score < value:
                 value = new_score
                 best_col = col
-            beta = min(beta, value)
-            if alpha >= beta:
-                break
+            # beta = min(beta, value)
+            # if alpha >= beta:
+            #     break
         return best_col, new_score
 
 def getValidCol(board):
@@ -197,7 +198,6 @@ def pickOptimalMove(board, value):
 board = createBoard()
 
 while not game_over:
-    print(turn, '\n')
     # get player input
     if turn == HUMAN:
         # User chooses a column to add value to
@@ -221,9 +221,10 @@ while not game_over:
     
     #process ai turn
     if turn == AI:
+        print('\n',"AI is making it's move...", '\n')
         # selects a random location for AI to add value to
-        # select = minmax(board, DEPTH, -math.inf, math.inf, True)[0]
-        select = pickOptimalMove(board, AI_VALUE)
+        select = minmax(board, DEPTH, True)[0]
+        # select = pickOptimalMove(board, AI_VALUE)
         if isValidMove(board, select):
             row = findOpenRow(board, select)
             addValueToBoard(board, row, select, AI_VALUE)
